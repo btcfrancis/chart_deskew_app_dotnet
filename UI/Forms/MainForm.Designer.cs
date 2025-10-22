@@ -98,9 +98,15 @@ partial class MainForm
     // splitContainer
     // 
     this.splitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
-    this.splitContainer.Location = new System.Drawing.Point(0, 25);
     this.splitContainer.Name = "splitContainer";
-    this.splitContainer.Orientation = System.Windows.Forms.Orientation.Horizontal;
+    this.splitContainer.Orientation = System.Windows.Forms.Orientation.Vertical;
+    this.splitContainer.SplitterDistance = 50;
+    this.splitContainer.SplitterIncrement = 1;
+    this.splitContainer.FixedPanel = System.Windows.Forms.FixedPanel.None;
+    this.splitContainer.Panel1MinSize = 100;
+    this.splitContainer.Panel2MinSize = 100;
+    this.splitContainer.SplitterWidth = 1;
+    this.splitContainer.TabIndex = 1;
 
     // 
     // splitContainer.Panel1
@@ -114,32 +120,24 @@ partial class MainForm
     this.splitContainer.Panel2.Controls.Add(this.lblCorrected);
     this.splitContainer.Panel2.Controls.Add(this.correctedImageViewer);
 
-    this.splitContainer.Size = new System.Drawing.Size(1200, 600);
-    this.splitContainer.SplitterDistance = 300;
-    this.splitContainer.TabIndex = 1;
-
     // 
     // lblOriginal
     // 
     this.lblOriginal.AutoSize = true;
-    this.lblOriginal.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+    this.lblOriginal.BackColor = System.Drawing.Color.Transparent;
     this.lblOriginal.Location = new System.Drawing.Point(10, 10);
+    this.lblOriginal.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
     this.lblOriginal.Name = "lblOriginal";
-    this.lblOriginal.Size = new System.Drawing.Size(95, 15);
     this.lblOriginal.TabIndex = 0;
     this.lblOriginal.Text = "Original Image";
 
     // 
     // originalImageViewer
     // 
-    this.originalImageViewer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-    | System.Windows.Forms.AnchorStyles.Left)
-    | System.Windows.Forms.AnchorStyles.Right)));
     this.originalImageViewer.BackColor = System.Drawing.Color.White;
     this.originalImageViewer.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-    this.originalImageViewer.Location = new System.Drawing.Point(10, 30);
+    this.originalImageViewer.Dock = System.Windows.Forms.DockStyle.Fill;
     this.originalImageViewer.Name = "originalImageViewer";
-    this.originalImageViewer.Size = new System.Drawing.Size(580, 260);
     this.originalImageViewer.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
     this.originalImageViewer.TabIndex = 1;
     this.originalImageViewer.TabStop = false;
@@ -148,24 +146,20 @@ partial class MainForm
     // lblCorrected
     // 
     this.lblCorrected.AutoSize = true;
-    this.lblCorrected.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+    this.lblCorrected.BackColor = System.Drawing.Color.Transparent;
     this.lblCorrected.Location = new System.Drawing.Point(10, 10);
+    this.lblCorrected.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
     this.lblCorrected.Name = "lblCorrected";
-    this.lblCorrected.Size = new System.Drawing.Size(105, 15);
     this.lblCorrected.TabIndex = 0;
-    this.lblCorrected.Text = "Corrected Image";
+    this.lblCorrected.Text = "Output Image";
 
     // 
     // correctedImageViewer
     // 
-    this.correctedImageViewer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-    | System.Windows.Forms.AnchorStyles.Left)
-    | System.Windows.Forms.AnchorStyles.Right)));
     this.correctedImageViewer.BackColor = System.Drawing.Color.White;
     this.correctedImageViewer.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-    this.correctedImageViewer.Location = new System.Drawing.Point(10, 30);
+    this.correctedImageViewer.Dock = System.Windows.Forms.DockStyle.Fill;
     this.correctedImageViewer.Name = "correctedImageViewer";
-    this.correctedImageViewer.Size = new System.Drawing.Size(580, 260);
     this.correctedImageViewer.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
     this.correctedImageViewer.TabIndex = 1;
     this.correctedImageViewer.TabStop = false;
@@ -174,16 +168,13 @@ partial class MainForm
     // statusPanel
     // 
     this.statusPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-    this.statusPanel.Location = new System.Drawing.Point(0, 625);
     this.statusPanel.Name = "statusPanel";
-    this.statusPanel.Size = new System.Drawing.Size(1200, 100);
     this.statusPanel.TabIndex = 2;
 
     // 
     // progressBar
     // 
     this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-    this.progressBar.Location = new System.Drawing.Point(10, 630);
     this.progressBar.Name = "progressBar";
     this.progressBar.Size = new System.Drawing.Size(200, 23);
     this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
@@ -195,10 +186,9 @@ partial class MainForm
     // 
     this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
     this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-    this.ClientSize = new System.Drawing.Size(1200, 725);
     this.Controls.Add(this.progressBar);
-    this.Controls.Add(this.statusPanel);
     this.Controls.Add(this.splitContainer);
+    this.Controls.Add(this.statusPanel);
     this.Controls.Add(this.toolStrip);
     this.Name = "MainForm";
     this.Text = "Chart Deskewer";

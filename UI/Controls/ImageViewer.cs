@@ -1,5 +1,3 @@
-using System.Drawing;
-
 namespace ChartDeskewApp.UI.Controls;
 
 /// <summary>
@@ -13,7 +11,7 @@ public partial class ImageViewer : PictureBox
   public ImageViewer()
   {
     InitializeComponent();
-    this.SizeMode = PictureBoxSizeMode.Zoom;
+    this.SizeMode = PictureBoxSizeMode.CenterImage;
     this.BackColor = Color.White;
     this.BorderStyle = BorderStyle.FixedSingle;
   }

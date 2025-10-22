@@ -27,6 +27,12 @@ public partial class MainForm : Form
     btnSaveCorrected.Click += BtnSaveCorrected_Click;
     btnProcessImage.Click += BtnProcessImage_Click;
 
+    // Set splitter to 50/50 split
+    this.Load += (s, e) =>
+    {
+      splitContainer.SplitterDistance = splitContainer.Width / 2;
+    };
+
     // Initialize status
     UpdateStatus("Ready to load image");
   }
