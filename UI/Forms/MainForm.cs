@@ -1,7 +1,9 @@
 using ChartDeskewApp.Core.Services;
 using ChartDeskewApp.Core.Models;
+using ChartDeskewApp.Core.Interfaces;
 using ChartDeskewApp.UI.Controls;
 using ChartDeskewApp.UI.Dialogs;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ChartDeskewApp.UI.Forms;
 
@@ -11,10 +13,10 @@ public partial class MainForm : Form
   private ChartAnalysisResult? _currentAnalysis;
   private byte[]? _currentImageData;
 
-  public MainForm()
+  public MainForm(IServiceProvider serviceProvider)
   {
     InitializeComponent();
-    _imageProcessor = new ImageProcessor();
+    _imageProcessor = serviceProvider.GetRequiredService<IImageProcessor>();
     InitializeUI();
   }
 
