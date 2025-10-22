@@ -1,21 +1,40 @@
+using Microsoft.Extensions.DependencyInjection;
+using ChartDeskewApp.Core.Interfaces;
+// using ChartDeskewApp.Core.Services;
+// using ChartDeskewApp.Core.Algorithms;
 using ChartDeskewApp.UI.Forms;
 
 namespace ChartDeskewApp;
 
-/// <summary>
-/// The main entry point for the application.
-/// </summary>
 static class Program
 {
-    /// <summary>
-    /// The main entry point for the application.
-    /// </summary>
     [STAThread]
     static void Main()
     {
-        // To customize application configuration such as set high DPI settings or default font,
-        // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
-        Application.Run(new MainForm());
+
+        // Set up dependency injection
+        var services = ConfigureServices();
+        var serviceProvider = services.BuildServiceProvider();
+        var mainForm = serviceProvider.GetRequiredService<MainForm>();
+
+        Application.Run(mainForm);
+    }
+
+    private static ServiceCollection ConfigureServices()
+    {
+        var services = new ServiceCollection();
+
+        // Register interfaces and implementations
+        // services.AddSingleton<IImageProcessor, ImageProcessor>();
+        // services.AddSingleton<IChartAnalyzer, ChartAnalyzer>();
+        // services.AddSingleton<ICircleDetector, CircleDetectionAlgorithm>();
+        // services.AddSingleton<IDeskewAlgorithm, DeskewAlgorithm>();
+        // services.AddSingleton<IGeometryHelper, GeometryHelper>();
+
+        // Register main form
+        services.AddTransient<MainForm>();
+
+        return services;
     }
 }
