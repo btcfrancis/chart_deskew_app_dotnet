@@ -1,3 +1,5 @@
+using System.Drawing.Drawing2D;
+
 namespace ChartDeskewApp.Core.Models;
 
 /// <summary>
@@ -31,22 +33,19 @@ public class DeskewParameters
   public double TranslationY { get; set; } = 0.0;
 
   /// <summary>
-  /// Interpolation method to use
-  /// </summary>
-  /// <summary>
   /// Interpolation method to use: "Bilinear", "Bicubic", etc.
   /// </summary>
-  public string InterpolationMode { get; set; } = "Bicubic";
+  public InterpolationMode InterpolationMode { get; set; } = InterpolationMode.Bicubic;
 
   /// <summary>
-  /// Quality of the transformation: e.g., "High", "Default"
+  /// Quality of the transformation.
   /// </summary>
-  public string CompositingQuality { get; set; } = "High";
+  public CompositingQuality CompositingQuality { get; set; } = CompositingQuality.HighQuality;
 
   /// <summary>
-  /// Smoothing mode for the transformation: e.g., "HighQuality", "None"
+  /// Smoothing mode for the transformation.
   /// </summary>
-  public string SmoothingMode { get; set; } = "HighQuality";
+  public SmoothingMode SmoothingMode { get; set; } = SmoothingMode.HighQuality;
 
   /// <summary>
   /// Creates a copy of these parameters
