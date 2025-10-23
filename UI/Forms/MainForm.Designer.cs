@@ -174,7 +174,7 @@ partial class MainForm
     // 
     // progressBar
     // 
-    this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+    this.progressBar.Anchor = (System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Right);
     this.progressBar.Name = "progressBar";
     this.progressBar.Size = new System.Drawing.Size(200, 23);
     this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
@@ -193,6 +193,8 @@ partial class MainForm
     this.Name = "MainForm";
     this.Text = "Chart Deskewer";
     this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+
+    this.statusPanel.Controls.Add(this.progressBar);
 
     this.toolStrip.ResumeLayout(false);
     this.toolStrip.PerformLayout();
