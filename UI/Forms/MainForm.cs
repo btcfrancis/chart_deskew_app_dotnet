@@ -61,23 +61,18 @@ public partial class MainForm : Form
     btnProcessImage.Enabled = false;
     progressBar.Visible = true;
 
-    var drawnImage = await _imageProcessor.DrawContoursAsync(_currentImageData);
+    var contours = await _imageProcessor.DetectRingsAsync(_currentImageData);
+    var drawnImage = await _imageProcessor.DeskewImageAsync(_currentImageData);
     await LoadImageToViewer(correctedImageViewer, drawnImage);
 
-    // Convert grayscale image byte[] to Bitmap for display
-    // byte[] imageBytes = _currentImageData;
-    // using (var ms = new MemoryStream(imageBytes))
-    // using (var mat = OpenCvSharp.Mat.FromStream(ms, OpenCvSharp.ImreadModes.Grayscale))
-    // {
-    //   byte[] drawnImage = mat.ToBytes(".png"); // convert back to PNG byte[] for next step
-    //   await LoadImageToViewer(correctedImageViewer, drawnImage);
-    // }
+    var contourImage = await _imageProcessor.DrawContoursAsync(_currentImageData, contours);
+    await LoadImageToViewer(originalImageViewer, contourImage);
 
     btnProcessImage.Enabled = true;
     progressBar.Visible = false;
   }
 
-  private async void BtnSaveCorrected_Click(object? sender, EventArgs e)
+  private void BtnSaveCorrected_Click(object? sender, EventArgs e)
   {
     if (_currentImageData == null) return;
 

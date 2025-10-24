@@ -26,7 +26,7 @@ public class ImageProcessor : IImageProcessor
 
     // Calculate area of the contour
     double area = Cv2.ContourArea(contour);
-    if (area < 10000) // skip very small contours and less than centeric black hole area
+    if (area < 5000) // skip very small contours and less than centeric black hole area
       return false;
 
     // Calculate area of the convex hull
@@ -61,7 +61,64 @@ public class ImageProcessor : IImageProcessor
     return areaRatio > 0.9 && areaRatio < 1.1;
   }
 
-  public async Task<List<OpenCvSharp.Point[]>> DetectContoursAsync(byte[] imageData)
+  /// <summary>
+  /// Comprehensive contour refinement for clean arc points
+  /// </summary>
+
+  /// <summary>
+  /// Removes unnecessary points: interior points, noise, and sticks
+  /// </summary>
+  private (double rotationAngle, double scaleX, double scaleY) CalculateCircularizationParams(List<OpenCvSharp.Point[]> contours)
+  {
+    if (contours.Count == 0) return (0, 1, 1);
+
+    var ellipseData = new List<(double angle, double majorAxis, double minorAxis)>();
+
+    // Fit ellipses and collect parameters
+    foreach (var contour in contours)
+    {
+      if (contour.Length < 5) continue;
+
+      try
+      {
+        var ellipse = Cv2.FitEllipse(contour);
+        double majorAxis = Math.Max(ellipse.Size.Width, ellipse.Size.Height);
+        double minorAxis = Math.Min(ellipse.Size.Width, ellipse.Size.Height);
+
+        ellipseData.Add((ellipse.Angle, majorAxis, minorAxis));
+      }
+      catch { }
+    }
+
+    if (ellipseData.Count == 0) return (0, 1, 1);
+
+    // Calculate weighted averages
+    double totalWeight = ellipseData.Sum(x => x.majorAxis * x.minorAxis);
+    double avgAngle = ellipseData.Sum(x => x.angle * x.majorAxis * x.minorAxis) / totalWeight;
+    double avgMajorAxis = ellipseData.Sum(x => x.majorAxis * x.majorAxis * x.minorAxis) / totalWeight;
+    double avgMinorAxis = ellipseData.Sum(x => x.minorAxis * x.majorAxis * x.minorAxis) / totalWeight;
+
+    // Calculate transformation parameters
+    double rotationAngle = -avgAngle;
+    double aspectRatio = avgMajorAxis / avgMinorAxis;
+
+    // Determine which axis to scale
+    double scaleX = 1.0;
+    double scaleY = 1.0;
+
+    if (Math.Abs(avgAngle) < 45) // Ellipse is wider than tall
+    {
+      scaleX = aspectRatio;
+    }
+    else // Ellipse is taller than wide
+    {
+      scaleY = aspectRatio;
+    }
+
+    return (rotationAngle, scaleX, scaleY);
+  }
+
+  public async Task<List<OpenCvSharp.Point[]>> DetectRingsAsync(byte[] imageData)
   {
     return await Task.Run(() =>
     {
@@ -95,7 +152,9 @@ public class ImageProcessor : IImageProcessor
       {
         var contour = contours[i];
         if (IsContourCircular(contour))
-          result.Add(Cv2.ConvexHull(contour));
+        {
+          result.Add(contour);
+        }
       }
 
       // Clean up resources
@@ -107,33 +166,103 @@ public class ImageProcessor : IImageProcessor
     });
   }
 
-  public async Task<byte[]> DrawContoursAsync(byte[] imageData)
+
+  /// <summary>
+  /// Applies deskew transformation to make ellipses circular
+  /// </summary>
+  private async Task<byte[]> DeskewToCircularAsync(byte[] imageData)
   {
-    // Detect contours first
-    var contours = await DetectContoursAsync(imageData);
+    return await Task.Run(async () =>
+    {
+      // Detect rings
+      var contours = await DetectRingsAsync(imageData);
 
-    Console.WriteLine($"Contours: {contours.Count}");
+      // Calculate circularization parameters
+      var (rotationAngle, scaleX, scaleY) = CalculateCircularizationParams(contours);
+      Console.WriteLine($"Rotation Angle: {rotationAngle}, Scale X: {scaleX}, Scale Y: {scaleY}");
 
-    // Decode the original image for drawing (preferably in color)
-    // Clone the original image so that the original one is not updated
-    Mat originalImg = Mat.FromImageData(imageData, ImreadModes.Color);
-    Mat imgColor = originalImg.Clone();
-    originalImg.Dispose();
+      // Load original image
+      Mat originalImg = Mat.FromImageData(imageData, ImreadModes.Color);
+      Mat deskewedImg = new Mat();
 
-    // Draw contours in blue
-    Scalar blueColor = new Scalar(255, 0, 0); // BGR for blue
-    Cv2.DrawContours(
-        image: imgColor,
-        contours: contours,
-        contourIdx: -1, // draw all contours
-        color: blueColor,
-        thickness: 2
-    );
+      // Get image center
+      var center = new OpenCvSharp.Point2f(originalImg.Width / 2, originalImg.Height / 2);
 
-    // Encode the result image (Mat) back to a byte array (e.g., PNG format)
-    byte[] outputImage = imgColor.ImEncode(".png");
-    imgColor.Dispose();
+      // Step 1: Rotate to align with axes
+      var rotationMatrix = Cv2.GetRotationMatrix2D(center, rotationAngle, 1.0);
+      Mat rotatedImg = new Mat();
+      Cv2.WarpAffine(originalImg, rotatedImg, rotationMatrix, originalImg.Size());
 
-    return outputImage;
+      // Step 2: Scale to make circular
+      var srcPoints = new OpenCvSharp.Point2f[] {
+          new OpenCvSharp.Point2f(0, 0),
+          new OpenCvSharp.Point2f(1, 0),
+          new OpenCvSharp.Point2f(0, 1)
+      };
+
+      var dstPoints = new OpenCvSharp.Point2f[] {
+        new OpenCvSharp.Point2f(0, 0),
+        new OpenCvSharp.Point2f((float)scaleX, 0),
+        new OpenCvSharp.Point2f(0, (float)scaleY)
+    };
+
+      var scaleMatrix = Cv2.GetAffineTransform(srcPoints, dstPoints);
+
+      Cv2.WarpAffine(rotatedImg, deskewedImg, scaleMatrix, originalImg.Size());
+
+      // Convert back to byte array
+      byte[] result = deskewedImg.ImEncode(".png");
+
+      // Clean up
+      originalImg.Dispose();
+      rotatedImg.Dispose();
+      deskewedImg.Dispose();
+      rotationMatrix.Dispose();
+      scaleMatrix.Dispose();
+
+      return result;
+    });
+  }
+
+  public async Task<byte[]> DrawContoursAsync(byte[] imageData, List<OpenCvSharp.Point[]> contours)
+  {
+    return await Task.Run(() =>
+    {
+      Console.WriteLine($"Contours: {contours.Count}");
+
+      // Decode the original image for drawing (preferably in color)
+      // Clone the original image so that the original one is not updated
+      Mat originalImg = Mat.FromImageData(imageData, ImreadModes.Color);
+      Mat imgColor = originalImg.Clone();
+      originalImg.Dispose();
+
+      // Draw contours in blue
+      Scalar blueColor = new Scalar(255, 0, 0); // BGR for blue
+      Cv2.DrawContours(
+          image: imgColor,
+          contours: contours,
+          contourIdx: -1, // draw all contours
+          color: blueColor,
+          thickness: 2
+      );
+
+      // Encode the result image (Mat) back to a byte array (e.g., PNG format)
+      byte[] outputImage = imgColor.ImEncode(".png");
+      imgColor.Dispose();
+
+      return outputImage;
+    });
+  }
+
+  public async Task<byte[]> DeskewImageAsync(byte[] image)
+  {
+    return await Task.Run(async () =>
+    {
+      var contours = await this.DetectRingsAsync(image);
+      var deskewedImage = await this.DeskewToCircularAsync(image);
+
+      var drawnImage = await this.DrawContoursAsync(image, contours);
+      return deskewedImage;
+    });
   }
 }
