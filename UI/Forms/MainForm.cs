@@ -1,5 +1,3 @@
-using ChartDeskewApp.Core.Services;
-using ChartDeskewApp.Core.Models;
 using ChartDeskewApp.Core.Interfaces;
 using ChartDeskewApp.UI.Controls;
 using ChartDeskewApp.UI.Dialogs;
@@ -10,7 +8,6 @@ namespace ChartDeskewApp.UI.Forms;
 public partial class MainForm : Form
 {
   private readonly IImageProcessor _imageProcessor;
-  private ChartAnalysisResult? _currentAnalysis;
   private byte[]? _currentImageData;
 
   public MainForm(IServiceProvider serviceProvider)
@@ -61,68 +58,32 @@ public partial class MainForm : Form
   {
     if (_currentImageData == null) return;
 
-    try
-    {
-      btnProcessImage.Enabled = false;
-      progressBar.Visible = true;
-      UpdateStatus("Analyzing chart...");
+    btnProcessImage.Enabled = false;
+    progressBar.Visible = true;
 
-      // Analyze the chart
-      _currentAnalysis = await _imageProcessor.AnalyzeChartAsync(_currentImageData);
+    var drawnImage = await _imageProcessor.DrawContoursAsync(_currentImageData);
+    await LoadImageToViewer(correctedImageViewer, drawnImage);
 
-      if (_currentAnalysis.IsValid)
-      {
-        UpdateStatus($"Analysis complete. Confidence: {_currentAnalysis.Confidence:P1}");
+    // Convert grayscale image byte[] to Bitmap for display
+    // byte[] imageBytes = _currentImageData;
+    // using (var ms = new MemoryStream(imageBytes))
+    // using (var mat = OpenCvSharp.Mat.FromStream(ms, OpenCvSharp.ImreadModes.Grayscale))
+    // {
+    //   byte[] drawnImage = mat.ToBytes(".png"); // convert back to PNG byte[] for next step
+    //   await LoadImageToViewer(correctedImageViewer, drawnImage);
+    // }
 
-        // Deskew the image
-        UpdateStatus("Deskewing image...");
-        var deskewedData = await _imageProcessor.DeskewImageAsync(_currentImageData, _currentAnalysis);
-
-        // Display the result
-        await LoadImageToViewer(correctedImageViewer, deskewedData);
-
-        // Update status with analysis details
-        statusPanel.UpdateAnalysis(_currentAnalysis);
-        btnSaveCorrected.Enabled = true;
-      }
-      else
-      {
-        UpdateStatus("Chart analysis failed. Please try a different image.");
-        MessageBox.Show("Could not detect a valid circular chart in the image.",
-            "Analysis Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-      }
-    }
-    catch (Exception ex)
-    {
-      MessageBox.Show($"Error processing image: {ex.Message}", "Error",
-          MessageBoxButtons.OK, MessageBoxIcon.Error);
-      UpdateStatus("Processing failed");
-    }
-    finally
-    {
-      btnProcessImage.Enabled = true;
-      progressBar.Visible = false;
-    }
+    btnProcessImage.Enabled = true;
+    progressBar.Visible = false;
   }
 
   private async void BtnSaveCorrected_Click(object? sender, EventArgs e)
   {
-    if (_currentImageData == null || _currentAnalysis == null) return;
+    if (_currentImageData == null) return;
 
     using var dialog = new SaveImageDialog();
     if (dialog.ShowDialog() == DialogResult.OK)
     {
-      try
-      {
-        var deskewedData = await _imageProcessor.DeskewImageAsync(_currentImageData, _currentAnalysis);
-        await File.WriteAllBytesAsync(dialog.FileName, deskewedData);
-        UpdateStatus($"Saved: {Path.GetFileName(dialog.FileName)}");
-      }
-      catch (Exception ex)
-      {
-        MessageBox.Show($"Error saving image: {ex.Message}", "Error",
-            MessageBoxButtons.OK, MessageBoxIcon.Error);
-      }
     }
   }
 

@@ -1,4 +1,3 @@
-using ChartDeskewApp.Core.Models;
 using System.Drawing;
 
 namespace ChartDeskewApp.UI.Controls;
@@ -9,7 +8,6 @@ namespace ChartDeskewApp.UI.Controls;
 public partial class StatusPanel : UserControl
 {
   private string _statusMessage = "Ready";
-  private ChartAnalysisResult? _analysisResult;
 
   public StatusPanel()
   {
@@ -23,15 +21,6 @@ public partial class StatusPanel : UserControl
   public void UpdateStatus(string message)
   {
     _statusMessage = message;
-    Invalidate();
-  }
-
-  /// <summary>
-  /// Updates the analysis result display
-  /// </summary>
-  public void UpdateAnalysis(ChartAnalysisResult analysis)
-  {
-    _analysisResult = analysis;
     Invalidate();
   }
 
@@ -59,31 +48,6 @@ public partial class StatusPanel : UserControl
     g.DrawString(_statusMessage, font, brush, 70, y);
     y += 20;
 
-    // Analysis results
-    if (_analysisResult != null)
-    {
-      g.DrawString("Analysis Results:", boldFont, brush, 10, y);
-      y += 20;
-
-      g.DrawString($"Center: ({_analysisResult.Center.X}, {_analysisResult.Center.Y})",
-          font, brush, 20, y);
-      y += 15;
-
-      g.DrawString($"Inner Radius: {_analysisResult.InnerRadius}px",
-          font, brush, 20, y);
-      y += 15;
-
-      g.DrawString($"Outer Radius: {_analysisResult.OuterRadius}px",
-          font, brush, 20, y);
-      y += 15;
-
-      g.DrawString($"Confidence: {_analysisResult.Confidence:P1}",
-          font, brush, 20, y);
-      y += 15;
-
-      g.DrawString($"Valid: {(_analysisResult.IsValid ? "Yes" : "No")}",
-          font, brush, 20, y);
-    }
 
     font.Dispose();
     boldFont.Dispose();

@@ -1,9 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 
+using ChartDeskewApp.UI.Forms;
 using ChartDeskewApp.Core.Interfaces;
 using ChartDeskewApp.Core.Services;
-using ChartDeskewApp.Core.Algorithms;
-using ChartDeskewApp.UI.Forms;
 
 namespace ChartDeskewApp;
 
@@ -28,10 +27,6 @@ static class Program
 
         // Register interfaces and implementations
         services.AddSingleton<IImageProcessor, ImageProcessor>();
-        services.AddSingleton<IChartAnalyzer, ChartAnalyzer>();
-        services.AddSingleton<ICircleDetector, CircleDetectionAlgorithm>();
-        services.AddSingleton<IDeskewAlgorithm, DeskewAlgorithm>();
-        services.AddSingleton<IGeometryHelper, GeometryHelper>();
 
         // Register main form
         services.AddTransient<MainForm>();
